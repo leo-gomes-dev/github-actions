@@ -31,8 +31,8 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
-      - name: Rodar testes
-        run: echo "Testes unitários aprovados!"
+      - name: Rodar testes reais (Vitest)
+        run: npm test
 
   # JOB 2: Build de Produção (CI)
   build-producao:
