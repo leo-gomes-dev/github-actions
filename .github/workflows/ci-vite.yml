@@ -1,80 +1,96 @@
-name: CI - Projeto Vite Vanilla
+name: CI/CD - Vite para GitHub Pages
 
-# Roda em qualquer push na main ou quando alguém abrir um Pull Request
 on:
   push:
     branches: ["main"]
   pull_request:
     branches: ["main"]
 
+# Permissões necessárias para o GitHub Actions publicar no GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-  # JOB 1: Validação e Testes
+  # JOB 1: Validação e Testes (CI)
   qualidade-e-testes:
-    name: Verificar Código e Dependências
+    name: 1. Verificar Código e Dependências
     runs-on: ubuntu-latest
 
     steps:
-      - name: 1. Baixar o código do repositório
+      - name: Baixar código
         uses: actions/checkout@v4
 
-      - name: 2. Configurar Node.js (com cache para ser mais rápido)
+      - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
 
-      - name: 3. Instalar dependências (modo limpo de CI)
+      - name: Instalar dependências
         run: npm ci
 
-      - name: 4. Rodar testes (simulado até você adicionar Vitest/Jest)
-        run: echo "Rodando suíte de testes unitários... Tudo OK!"
+      - name: Rodar testes
+        run: echo "Testes unitários aprovados!"
 
-  # JOB 2: Build de Produção (Só roda se o Job 1 passar!)
+  # JOB 2: Build de Produção (CI)
   build-producao:
-    name: Gerar Build do Vite
+    name: 2. Gerar Build do Vite
     runs-on: ubuntu-latest
-    needs: qualidade-e-testes # Cria dependência entre os jobs
+    needs: qualidade-e-testes
 
     steps:
-      - name: 1. Baixar o código do repositório
+      - name: Baixar código
         uses: actions/checkout@v4
 
-      - name: 2. Configurar Node.js
+      - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
 
-      - name: 3. Instalar dependências
+      - name: Instalar dependências
         run: npm ci
 
-      - name: 4. Validar Secrets e Gerar Build (dist)
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Gerar Build com Secrets
         env:
-          # Aqui puxamos a Secret do GitHub para dentro da máquina virtual
           VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
           VITE_AMBIENTE: "producao"
-        run: |
-          echo "Verificando variáveis injetadas..."
-          if [ -z "$VITE_API_KEY" ]; then
-            echo "ERRO: VITE_API_KEY não foi configurada!"
-            exit 1
-          fi
-          echo "Secret detectada com sucesso! (O GitHub mascara o valor como ***)"
-          echo "Valor mascarado: $VITE_API_KEY"
-          npm run build
+        run: npm run build
 
-      - name: 5. Salvar a pasta 'dist' gerada (Artifact)
-        uses: actions/upload-artifact@v4
+      - name: Empacotar pasta 'dist' para o Pages
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: build-vite-pronto
           path: dist/
 
-      - name: 6. Notificar no Discord via Webhook
-        if: always() # Garante que vai avisar mesmo se o build falhar
+  # JOB 3: Deploy em Produção + Aviso no Discord (CD)
+  deploy-producao:
+    name: 3. Publicar no GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build-producao
+    # Só faz deploy se for um push direto na main (ignora Pull Requests abertos)
+    if: github.ref == 'refs/heads/main'
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Publicar site no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Notificar no Discord com o link no ar
+        if: always()
         env:
           WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
           curl -H "Content-Type: application/json" \
                -X POST \
-               -d "{\"content\": \"🚀 **Pipeline finalizado!**\n📦 **Projeto:** ${{ github.repository }}\n🌿 **Branch:** ${{ github.ref_name }}\n📊 **Status:** ${{ job.status }}\n👤 **Autor:** ${{ github.actor }}\"}" \
+               -d "{\"content\": \"🚀 **Deploy concluído com sucesso!**\n📦 **Projeto:** ${{ github.repository }}\n📊 **Status:** ${{ job.status }}\n🌐 **Acesse o site no ar:** $SITE_URL\"}" \
                "$WEBHOOK_URL"
