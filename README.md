@@ -17,7 +17,7 @@ Diferente de um projeto comum onde o código é enviado manualmente para o servi
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 * **Vite** (JavaScript Vanilla) — Bundler e ambiente de desenvolvimento.
 * **Vitest** — Framework de testes unitários.
@@ -89,6 +89,6 @@ Além disso, ative o deploy via Actions em **Settings > Pages > Source > GitHub 
 
 ---
 
-## 👨‍💻 Autor e Créditos
+## Autor e Créditos
 
 Desenvolvido por **Leo Gomes Develop** ([@leo-gomes-dev](https://github.com)) — Material de apoio**.
