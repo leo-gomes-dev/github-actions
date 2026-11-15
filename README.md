@@ -1,6 +1,6 @@
 # Laboratório Prático: CI/CD e Testes Automatizados com GitHub Actions
 
-[![CI/CD - Vite para GitHub Pages]](https://leo-gomes-dev.github.io/github-actions/)
+[CI/CD - Vite para GitHub Pages](https://leo-gomes-dev.github.io/github-actions/)
 
 Este repositório é um ambiente de estudo criado para os alunos do curso de **Fullstack JavaScript** aprenderem, na prática, como funciona uma esteira completa de **Integração Contínua (CI)** e **Entrega/Implantação Contínua (CD)** utilizando **Vite**, **Vitest** e **GitHub Actions**.
 
