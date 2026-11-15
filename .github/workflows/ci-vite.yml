@@ -68,3 +68,13 @@ jobs:
         with:
           name: build-vite-pronto
           path: dist/
+
+      - name: 6. Notificar no Discord via Webhook
+        if: always() # Garante que vai avisar mesmo se o build falhar
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "{\"content\": \"🚀 **Pipeline finalizado!**\n📦 **Projeto:** ${{ github.repository }}\n🌿 **Branch:** ${{ github.ref_name }}\n📊 **Status:** ${{ job.status }}\n👤 **Autor:** ${{ github.actor }}\"}" \
+               "$WEBHOOK_URL"
