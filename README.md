@@ -46,7 +46,7 @@ O arquivo `.github/workflows/ci-vite.yml` está dividido em **3 Jobs sequenciais
 
 1. **Clone o repositório:**
    ```bash
-   git clone https://github.com
+   git clone https://github.com/leo-gomes-dev/github-actions.git
    cd github-actions
    ```
 
